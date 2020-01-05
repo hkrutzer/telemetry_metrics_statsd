@@ -239,7 +239,7 @@ defmodule TelemetryMetricsStatsd do
           | {:metrics, [Metrics.t()]}
           | {:mtu, non_neg_integer()}
           | {:prefix, prefix()}
-          | {:formatter, :standard | :datadog}
+          | {:formatter, :standard | :datadog | module()}
           | {:global_tags, Keyword.t()}
   @type options :: [option]
 
@@ -393,6 +393,11 @@ defmodule TelemetryMetricsStatsd do
   defp validate_and_translate_formatter(:standard), do: TelemetryMetricsStatsd.Formatter.Standard
   defp validate_and_translate_formatter(:datadog), do: TelemetryMetricsStatsd.Formatter.Datadog
 
-  defp validate_and_translate_formatter(_),
-    do: raise(ArgumentError, ":formatter needs to be either :standard or :datadog")
+  defp validate_and_translate_formatter(module) do
+    unless Code.ensure_compiled?(module) do
+      raise(ArgumentError, ":formatter needs to be :standard, :datadog or a module")
+    end
+
+    module
+  end
 end
